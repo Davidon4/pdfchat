@@ -7,7 +7,7 @@ const poolConnection = mysql.createPool({
   user: "Juggernaut",
   database: "pdfchatdb",
 });
-const db = drizzle({ client: poolConnection });
+export const db = drizzle({ client: poolConnection });
 
 // or if you need client connection
 async function main() {
