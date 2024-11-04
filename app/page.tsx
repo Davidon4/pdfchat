@@ -38,7 +38,7 @@ export default async function Home() {
             {isAuth ? (
               <FileUpload />
              ) : (
-                <Link href="/sign-in">
+                <Link href="/sign-in" prefetch={false}>
                 <Button>
                   Login to get Started!
                   <LogIn className="w-4 h-4 ml-2" />
