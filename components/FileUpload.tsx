@@ -8,8 +8,10 @@ import { useMutation } from '@tanstack/react-query';
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { Loader2 } from 'lucide-react';
+import {useRouter} from "next/navigation";
 
 const FileUpload = () => {
+    const router = useRouter();
     const [uploading, setUploading] = React.useState(false);
     const {mutate} = useMutation({
         mutationFn: async ({file_key, file_name}: {file_key: string, file_name: string}) => {
@@ -37,10 +39,10 @@ const FileUpload = () => {
                 return;
             }
              mutate(data, {
-                onSuccess: (data) => {
-                    // toast.success(data.message);
-                    console.log(data)
-                },
+                onSuccess: ({ chat_id }) => {
+                    toast.success("Chat created!");
+                    router.push(`/chat/${chat_id}`);
+                  },
                 onError: (err) => {
                     toast.error("Error creating chat");
                     console.error(err);
@@ -56,13 +58,14 @@ const FileUpload = () => {
   return (
     <div className="p-2 bg-white rounded-xl">
         <div {...getRootProps({
-            className: "border-dashed border-2 "
+                      className:
+                      "border-dashed border-2 rounded-xl cursor-pointer bg-gray-50 py-8 flex justify-center items-center flex-col",        
         })}>
             <input {...getInputProps()}/>
             {(uploading) ? (
             <>
               <Loader2 className="h-10 w-10 text-blue-500 animate-spin"/>
-              <p className="mt-2 text-sm text-slate-400">Spilling Tea to GPT...</p>    
+              <p className="mt-2 text-sm text-slate-400">Seeding Data to GPT...</p>    
             </>
             ) : (
             <>
