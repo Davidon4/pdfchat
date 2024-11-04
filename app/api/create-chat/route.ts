@@ -1,5 +1,6 @@
 import { loadS3IntoPinecone } from "@/lib/pinecone";
 import { NextResponse } from "next/server";
+import type { NextRequest } from 'next/server';
 import {db} from "@/db";
 import { chats } from "@/db/schema";
 import { getS3Url } from "@/lib/s3";
@@ -7,14 +8,14 @@ import {auth} from "@clerk/nextjs/server";
 
 export const runtime = "nodejs";
 
-export async function POST(req: Request, res: Response) {
+export async function POST(request: NextRequest) {
     const {userId} = await auth();
 
     if (!userId) {
         return NextResponse.json({ error: "unauthorized" }, { status: 401 });
       }
     try {
-        const body = await req.json();
+        const body = await request.json();
         const {file_key, file_name} = body;
         console.log("FILES=>", file_key, file_name);
          await loadS3IntoPinecone(file_key);
