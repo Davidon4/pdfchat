@@ -49,7 +49,7 @@ export async function POST(req: Request) {
         ...messages.filter((message: Message) => message.role === "user"),
       ],
       stream: true,
-    }) as any;
+    });
     const stream = OpenAIStream(response, {
       onStart: async () => {
         // save user message into db
@@ -69,5 +69,8 @@ export async function POST(req: Request) {
       },
     });
     return new StreamingTextResponse(stream);
-  } catch (error) {}
+  } catch (error: unknown) {
+    console.error('Error in chat route:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

@@ -1,23 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import {UserButton} from '@clerk/nextjs';
 import Link from "next/link";
 import { ArrowRight, LogIn } from "lucide-react";
 import FileUpload from "@/components/FileUpload";
-import { db } from "@/db";
-import { chats } from "@/db/schema";
-import { eq } from "drizzle-orm";
 
 export default async function Home() {
   const {userId} = await auth();
-  let user = null;
-  let chat_id: string | number | null = null;
-
-  if (userId) {
-    user = await (await clerkClient()).users.getUser(userId as string);
-  const existingChat = await db.select().from(chats).where(eq(chats.userId, userId)).limit(1);
-  chat_id = existingChat[0]?.id?.toString();
-  }
   const isAuth = !!userId;
 
   return (
@@ -30,7 +19,7 @@ export default async function Home() {
           </div>
 
           <div className="flex mt-2">
-            {isAuth && chat_id && (
+            {isAuth && (
               <>
                <Link href={`/`}>
                   <Button>

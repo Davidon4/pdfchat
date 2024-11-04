@@ -5,7 +5,6 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import axios from "axios";
 
 type Props = {
   chats: DrizzleChat[];
@@ -13,7 +12,6 @@ type Props = {
 };
 
 const ChatSideBar = ({ chats, chatId }: Props) => {
-  const [loading, setLoading] = React.useState(false);
 
   return (
     <div className="w-full h-screen p-4 text-gray-200 bg-gray-900 flex flex-col">

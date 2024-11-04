@@ -84,7 +84,8 @@ async function prepareDocuments(pages: PDFPage[]) {
   const documents: Document[] = [];
 
     for (const page of pages) {
-    let { pageContent, metadata } = page;
+    let { pageContent } = page;
+    const {metadata} = page;
     const text = pageContent = pageContent.replace(/\n/g, "").trim();
     // split the docs
     const splitter = new RecursiveCharacterTextSplitter({
