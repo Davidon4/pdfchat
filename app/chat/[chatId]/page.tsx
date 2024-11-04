@@ -13,8 +13,7 @@ type Props = {
         }
 }
 
-const ChatPage = async (props: Props) => {
-  const {params} = props;
+export default async function ChatPage ({params}: Props) {
     const {chatId} = params;
     const {userId} = await auth();
 
@@ -43,5 +42,3 @@ const ChatPage = async (props: Props) => {
     </div>
     )
 }
-
-export default ChatPage;
