@@ -4,6 +4,7 @@ import {db} from "@/db";
 import { chats } from "@/db/schema";
 import { getS3Url } from "@/lib/s3";
 import {auth} from "@clerk/nextjs/server";
+import axios from 'axios';
 
 export const runtime = "nodejs";
 
@@ -14,8 +15,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "unauthorized" }, { status: 401 });
       }
     try {
-        const body = await request.json();
-        const {file_key, file_name} = body;
+
+        const {file_key, file_name} = await request.json();
 
         const result = await db
         .insert(chats)
@@ -29,23 +30,37 @@ export async function POST(request: NextRequest) {
           .returning({insertId: chats.id})
          .execute();
 
-         const baseUrl = process.env.VERCEL_URL 
-         ? `https://${process.env.VERCEL_URL}` 
-         : 'http://localhost:3000';
+        try {
+            // Use absolute URL with environment variable
+            const baseUrl = process.env.VERCEL_URL 
+                ? `https://${process.env.VERCEL_URL}` 
+                : `http://${process.env.NEXT_PUBLIC_BASE_URL}`;
 
-         fetch(`${baseUrl}/api/process-chat`, {
-            method: "POST",
-            body: JSON.stringify({file_key, chat_id: result[0].insertId})
-         })
+            console.log('Attempting to call process-chat at:', `${baseUrl}/api/process-chat`);
+            
+            await axios.post(`${baseUrl}/api/process-chat`, {
+                file_key, 
+                chat_id: result[0].insertId
+            });
 
-          return NextResponse.json(
+            console.log('Successfully called process-chat');
+        } catch (error: any) {
+            console.error('Detailed error calling process-chat:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                url: error.config?.url
+            });
+        }
+
+        return NextResponse.json(
             {
-              chat_id: result[0].insertId
+                chat_id: result[0].insertId
             },
             { status: 200 }
-          );
+        );
     } catch (err) {
         console.error(err)
         return NextResponse.json({error: "internal server error"}, {status: 500})
     }
-}
+  }

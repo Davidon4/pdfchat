@@ -2,16 +2,23 @@ import { db } from "@/db";
 import { chats } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(
-  req: Request,
+  request: Request,
   { params }: { params: { chatId: string } }
 ) {
+
+  const { userId } = await auth();
+  if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
   try {
     const chatId = parseInt(params.chatId);
+    console.log("Chat ID:", chatId);
     const chat = await db.select().from(chats).where(eq(chats.id, chatId));
 
-    if (!chat.length) {
+    if (!chat || chat.length === 0) {
       return NextResponse.json({ error: "Chat not found" }, { status: 404 });
     }
 

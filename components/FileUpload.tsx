@@ -17,17 +17,26 @@ const FileUpload = () => {
     const { data: processingStatus } = useQuery({
         queryKey: ["chat-status", chatId],
         queryFn: async () => {
+            if (!chatId) return null;
+            console.log("Fetching status for chatId:", chatId);
             const response = await axios.get(`/api/chat-status/${chatId}`);
+            console.log("Status response:", response.data);
             return response.data.status;
         },
         enabled: !!chatId,
-        refetchInterval: (query) => query.state.data === 'processing' ? 1000 : false,
+        refetchInterval: (query) => {
+            console.log("Current status:", query.state.data);
+            return query.state.data === 'processing' ? 1000 : false;
+        },
+        initialData: null,
+        retry: 3
     });
     
     useEffect(() => {
+        if (!processingStatus) return; 
         console.log("Status changed:", processingStatus); 
         if (processingStatus === 'complete') {
-            console.log("Redirecting to:", `/chat/${chatId}`); //
+            console.log("Redirecting to:", `/chat/${chatId}`);
             router.push(`/chat/${chatId}`);
         } else if (processingStatus === 'failed') {
             toast.error("Failed to process PDF");
@@ -36,17 +45,23 @@ const FileUpload = () => {
 
     const {mutate} = useMutation({
         mutationFn: async ({file_key, file_name}: {file_key: string, file_name: string}) => {
-            const response = await axios.post('/api/create-chat',{file_key, file_name, startPage: 0})
+            console.log("Creating chat with:", {file_key, file_name});
+            const response = await axios.post('/api/create-chat', {
+                file_key,
+                file_name,
+                startPage: 0
+            });
+            console.log("Create chat response:", response.data);
             return response.data;
         },
         onSuccess: (data) => {
+            console.log("Chat created successfully:", data);
             toast.success("Processing PDF...");
-            // Make sure we're getting chat_id from the correct response structure
-            setChatId(data.chat_id);  // Verify this matches your API response
+            setChatId(data.chat_id);
         },
         onError: (err) => {
+            console.error("Error creating chat:", err);
             toast.error("Error creating chat");
-            console.error(err);
         }
     });
 
