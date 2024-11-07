@@ -29,7 +29,11 @@ export async function POST(request: NextRequest) {
           .returning({insertId: chats.id})
          .execute();
 
-         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/process-chat`, {
+         const baseUrl = process.env.VERCEL_URL 
+         ? `https://${process.env.VERCEL_URL}` 
+         : 'http://localhost:3000';
+
+         fetch(`${baseUrl}/api/process-chat`, {
             method: "POST",
             body: JSON.stringify({file_key, chat_id: result[0].insertId})
          })
