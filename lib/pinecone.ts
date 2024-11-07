@@ -9,7 +9,7 @@ import md5 from "md5";
 import { getEmbeddings } from "./embeddings";
 import { convertToAscii } from "./utils";
 
-const CHUNK_SIZE = 200;  // Smaller chunks
+const CHUNK_SIZE = 1000;  // Smaller chunks
 const CHUNK_OVERLAP = 20;  // Minimal overlap
 const BATCH_SIZE = 100;
 
@@ -26,7 +26,11 @@ type PDFPage = {
         };
     };
 
-export async function loadS3IntoPinecone(fileKey: string) {
+export async function loadS3IntoPinecone(
+  fileKey: string,
+  startPage: number = 0,
+  chunkSize: number = 20
+) {
   try{
     //1. obtain the pdf
     console.log("Downloading s3 into file system")
@@ -39,9 +43,13 @@ export async function loadS3IntoPinecone(fileKey: string) {
     const loader = new PDFLoader(file_name)
     const pages = (await loader.load()) as PDFPage[]
 
-    //2. split and segment the pdf 
-    console.log("Preparing documents...");
-    const documents = await prepareDocuments(pages);
+        // 2. Process only the specified range of pages
+        const endPage = Math.min(startPage + chunkSize, pages.length);
+        const currentPages = pages.slice(startPage, endPage);
+
+    //3. split and segment the pdf 
+    console.log(`Preparing documents for pages ${startPage} to ${endPage}...`);
+    const documents = await prepareDocuments(currentPages);
 
     // 3. vectorise and embed individual documents
     console.log("Processing embeddings in batches...");
@@ -66,7 +74,11 @@ export async function loadS3IntoPinecone(fileKey: string) {
           console.log(`Uploaded vectors batch ${i / 100 + 1} of ${Math.ceil(vectors.length / 100)}`);
         }
   
-    return documents[0];
+        return {
+          hasMore: endPage < pages.length,
+          nextPage: endPage,
+          totalPages: pages.length
+        };
   } catch (error) {
     console.error("Error in loadS3IntoPinecone:", error);
     throw error;

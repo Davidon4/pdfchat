@@ -34,7 +34,7 @@ const FileUpload = () => {
 
     const {mutate} = useMutation({
         mutationFn: async ({file_key, file_name}: {file_key: string, file_name: string}) => {
-            const response = await axios.post('/api/create-chat',{file_key, file_name})
+            const response = await axios.post('/api/create-chat',{file_key, file_name, startPage: 0})
             return response.data;
         }
     });
@@ -99,3 +99,36 @@ const FileUpload = () => {
 }
 
 export default FileUpload;
+
+
+// Update your frontend to poll for status:
+// const checkStatus = async (chatId: string) => {
+//     const response = await axios.get(`/api/chat-status/${chatId}`);
+//     return response.data.status;
+// };
+
+// // In your upload success handler:
+// const { mutate } = useMutation({
+//     mutationFn: async () => {
+//         const response = await axios.post("/api/process-chat", {
+//             file_key: fileKey,
+//             chat_id: chatId,
+//         });
+        
+//         // Start polling for status
+//         const interval = setInterval(async () => {
+//             const status = await checkStatus(chatId);
+//             if (status === 'complete' || status === 'failed') {
+//                 clearInterval(interval);
+//                 if (status === 'complete') {
+//                     toast.success("Processing complete!");
+//                     router.push(`/chat/${chatId}`);
+//                 } else {
+//                     toast.error("Processing failed!");
+//                 }
+//             }
+//         }, 5000); // Check every 5 seconds
+        
+//         return response.data;
+//     },
+// });
