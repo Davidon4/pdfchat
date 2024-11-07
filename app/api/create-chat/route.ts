@@ -1,4 +1,3 @@
-import { loadS3IntoPinecone } from "@/lib/pinecone";
 import { NextResponse } from "next/server";
 import type { NextRequest } from 'next/server';
 import {db} from "@/db";
@@ -17,22 +16,27 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         const {file_key, file_name} = body;
-        console.log("FILES=>", file_key, file_name);
-         await loadS3IntoPinecone(file_key);
+
         const result = await db
         .insert(chats)
         .values({
             fileKey: file_key,
             pdfName: file_name,
             pdfUrl: getS3Url(file_key),
-            userId})
+            userId,
+          status: 'processing'
+        })
           .returning({insertId: chats.id})
          .execute();
 
-         const chat_id = result[0].insertId;
+         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/process-chat`, {
+            method: "POST",
+            body: JSON.stringify({file_key, chat_id: result[0].insertId})
+         })
+
           return NextResponse.json(
             {
-              chat_id
+              chat_id: result[0].insertId
             },
             { status: 200 }
           );

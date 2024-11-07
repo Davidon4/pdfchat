@@ -1,0 +1,53 @@
+const pollChatStatus = async (chatId: string) => {
+    const response = await fetch(`/api/chat-status/${chatId}`);
+    const data = await response.json();
+    
+    if (data.status === 'processing') {
+        // Wait 2 seconds and check again
+        setTimeout(() => pollChatStatus(chatId), 2000);
+    } else if (data.status === 'complete') {
+        // Processing finished, update UI
+    } else if (data.status === 'failed') {
+        // Handle error state
+    }
+}
+
+import { loadS3IntoPinecone } from "@/lib/pinecone";
+import { NextResponse } from "next/server";
+import type { NextRequest } from 'next/server';
+import {db} from "@/db";
+import { chats } from "@/db/schema";
+
+export const maxDuration = 300;
+export const runtime = "nodejs";
+
+export async function POST(request: NextRequest) {
+    try {
+        const body = await request.json();
+        const {file_key, chat_id} = body;
+        
+        await loadS3IntoPinecone(file_key);
+        
+        // Update chat status to complete
+        await db
+            .update(chats)
+            .set({ status: 'complete' })
+            .where(chats.id.equals(chat_id))
+            .execute();
+
+        return NextResponse.json({ success: true }, { status: 200 });
+    } catch (err) {
+        console.error(err);
+        
+        // Update chat status to failed
+        if (body?.chat_id) {
+            await db
+                .update(chats)
+                .set({ status: 'failed' })
+                .where(chats.id.equals(body.chat_id))
+                .execute();
+        }
+        
+        return NextResponse.json({error: "internal server error"}, {status: 500});
+    }
+}
