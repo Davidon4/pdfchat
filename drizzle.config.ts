@@ -3,9 +3,10 @@ dotenv.config({ path: ".env" });
 import type { Config } from "drizzle-kit";
 
 export default {
+  out: './drizzle',
   driver: "pg",
   schema: './db/schema.ts',
   dbCredentials: {
     connectionString: process.env.POSTGRES_URL!,
-  },
-} satisfies Config;;
+  }
+} satisfies Config;
