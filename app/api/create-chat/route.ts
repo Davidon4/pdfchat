@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
             pdfName: file_name,
             pdfUrl: getS3Url(file_key),
             userId})
+          .returning({insertId: chats.id})
          .execute();
 
          const chat_id = result[0].insertId;
