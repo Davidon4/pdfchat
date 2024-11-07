@@ -1,5 +1,5 @@
-export const runtime = 'nodejs'
+import { sql } from '@vercel/postgres';
+import { drizzle } from 'drizzle-orm/vercel-postgres';
 
-import { drizzle } from "drizzle-orm/mysql2";
+export const db = drizzle(sql)
 
-export const db = drizzle(process.env.NEXT_PUBLIC_DATABASE_URL!);
