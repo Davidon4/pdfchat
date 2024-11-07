@@ -4,10 +4,18 @@ import {UserButton} from '@clerk/nextjs';
 import Link from "next/link";
 import { ArrowRight, LogIn } from "lucide-react";
 import FileUpload from "@/components/FileUpload";
+import { db } from "@/db";
+import { chats } from "@/db/schema";
+import { eq, desc } from 'drizzle-orm';
 
 export default async function Home() {
   const {userId} = await auth();
   const isAuth = !!userId;
+
+  const mostRecentChat = userId ?await db.query.chats.findFirst({
+    where: eq(chats.userId, userId),
+    orderBy: [desc(chats.createdAt)]
+  }) : null;
 
   return (
     <div className="w-screen min-h-screen bg-gradient-to-r from-rose-100 to-teal-100">
@@ -19,9 +27,9 @@ export default async function Home() {
           </div>
 
           <div className="flex mt-2">
-            {isAuth && (
+            {isAuth && mostRecentChat && (
               <>
-               <Link href={`/`}>
+               <Link href={`/chat/${mostRecentChat.id}`}>
                   <Button>
                     Go to Chat Page <ArrowRight className="ml-2" />
                   </Button>

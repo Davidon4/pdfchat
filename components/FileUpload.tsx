@@ -25,7 +25,9 @@ const FileUpload = () => {
     });
     
     useEffect(() => {
+        console.log("Status changed:", processingStatus); 
         if (processingStatus === 'complete') {
+            console.log("Redirecting to:", `/chat/${chatId}`); //
             router.push(`/chat/${chatId}`);
         } else if (processingStatus === 'failed') {
             toast.error("Failed to process PDF");
@@ -36,6 +38,15 @@ const FileUpload = () => {
         mutationFn: async ({file_key, file_name}: {file_key: string, file_name: string}) => {
             const response = await axios.post('/api/create-chat',{file_key, file_name, startPage: 0})
             return response.data;
+        },
+        onSuccess: (data) => {
+            toast.success("Processing PDF...");
+            // Make sure we're getting chat_id from the correct response structure
+            setChatId(data.chat_id);  // Verify this matches your API response
+        },
+        onError: (err) => {
+            toast.error("Error creating chat");
+            console.error(err);
         }
     });
 
@@ -58,7 +69,7 @@ const FileUpload = () => {
             }
              mutate(data, {
                 onSuccess: ({ chat_id }) => {
-                    toast.success("Processing PDF...");
+                    toast.success("Processed PDF...");
                     setChatId(chat_id);
                   },
                 onError: (err) => {
