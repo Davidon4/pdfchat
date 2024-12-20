@@ -1,6 +1,6 @@
 "use client"
-import React, { useState } from "react";
-import { auth } from "@clerk/nextjs/server";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
 import {redirect} from "next/navigation";
 import { db } from "@/db";
 import { chats } from "@/db/schema";
@@ -16,21 +16,33 @@ type Props = {
         }
 }
 
-const ChatPage = async ({params}: Props) => {
+const ChatPage = ({params}: Props) => {
     const [showSidebar, setShowSidebar] = useState(false);
+    const [chatsData, setChatsData] = useState<any[]>([]);
     const {chatId} = params;
-    const {userId} = await auth();
+    const { userId } = useAuth();
+
+    useEffect(() => {
+        if(!userId) {
+            redirect("/sign-in");
+            return;
+        }
+
+        const fetchChats = async () => {
+            const _chats = await db.select().from(chats).where(eq(chats.userId, userId));
+            setChatsData(_chats);
+            
+            if (!_chats || !_chats.find((chat) => chat.id === parseInt(chatId))) {
+                redirect("/");
+            }
+        };
+
+        fetchChats();
+    }, [userId, chatId]);
 
     if(!userId) {
-        return redirect("/sign-in")
+        return null; // or a loading state
     }
-    const _chats = await db.select().from(chats).where(eq(chats.userId, userId))
-    if (!_chats) {
-        return redirect("/")
-      }
-      if (!_chats.find((chat) => chat.id === parseInt(chatId))) {
-        return redirect("/")
-      }
 
     return (
       <div className="flex max-h-screen overflow-hidden">
@@ -50,7 +62,7 @@ const ChatPage = async ({params}: Props) => {
           ${showSidebar ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
           bg-white z-40 border-r border-gray-200`}
         >
-          <ChatSideBar chats={_chats} chatId={parseInt(chatId)} onChatSelect={() => setShowSidebar(false)} />
+          <ChatSideBar chats={chatsData} chatId={parseInt(chatId)} onChatSelect={() => setShowSidebar(false)} />
         </div>
 
         {/* Overlay for mobile */}
