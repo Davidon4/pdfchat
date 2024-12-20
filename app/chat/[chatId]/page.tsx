@@ -22,21 +22,23 @@ export default async function ChatPage ({params}: Props) {
     }
     const _chats = await db.select().from(chats).where(eq(chats.userId, userId))
     if (!_chats) {
-        return redirect("/");
+        return redirect("/")
       }
       if (!_chats.find((chat) => chat.id === parseInt(chatId))) {
-        return redirect("/");
+        return redirect("/")
       }
 
     return (
-      <div className="flex flex-col h-screen md:flex-row">
+      <div className="flex max-h-screen overflow-hidden">
+        {/* Sidebar */}
         <div
-        className={`md:block md:flex-[1] md:max-w-xs h-full overflow-y-auto transition-all duration-300 ease-in-out`}
-      >
+          className="w-full md:w-[300px] md:flex-shrink-0 h-full overflow-y-auto border-r border-gray-200 
+          bg-white transition-all duration-300 ease-in-out"
+        >
           <ChatSideBar chats={_chats} chatId={parseInt(chatId)} />
         </div>
-        {/* chat component */}
-        <div className="flex-[3] h-full overflow-y-auto border-l border-l-slate-200">
+        {/* Main chat area */}
+        <div className="flex-1 h-screen overflow-hidden">
           <ChatComponent chatId={parseInt(chatId)} />
         </div>
       </div>
