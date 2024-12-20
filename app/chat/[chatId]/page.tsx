@@ -21,9 +21,11 @@ const ChatPage = ({params}: Props) => {
     const [chatsData, setChatsData] = useState<any[]>([]);
     const {chatId} = params;
     const { userId } = useAuth();
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if(!userId) {
+            console.log("No userId found");
             redirect("/sign-in");
             return;
         }
@@ -33,19 +35,31 @@ const ChatPage = ({params}: Props) => {
                 console.log("Fetching chats for userId:", userId);
                 const _chats = await db.select().from(chats).where(eq(chats.userId, userId));
                 console.log("Fetched chats:", _chats);
+                
+                if (!_chats || _chats.length === 0) {
+                    console.log("No chats found for user");
+                    setChatsData([]);
+                    return;
+                }
+
                 setChatsData(_chats);
                 
-                if (!_chats || !_chats.find((chat) => chat.id === parseInt(chatId))) {
+                if (!_chats.find((chat) => chat.id === parseInt(chatId))) {
                     console.log("No matching chat found for chatId:", chatId);
                     redirect("/");
                 }
             } catch (error) {
                 console.error("Error fetching chats:", error);
+                setError("Failed to fetch chats");
             }
         };
 
         fetchChats();
     }, [userId, chatId]);
+
+    if(error) {
+        return <div className="text-red-500">Error: {error}</div>
+    }
 
     if(!userId) {
         return null; // or a loading state
