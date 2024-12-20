@@ -29,13 +29,16 @@ const ChatSideBar = ({ chats, chatId, onChatSelect }: Props) => {
             <div
               className={cn("rounded-lg p-3 text-slate-300 flex items-center transition-colors duration-200", {
                 "bg-blue-600 text-white": chat.id === chatId,
-                "hover:bg-gray-800 hover:text-white": chat.id !== chatId,
+                "hover:bg-gray-700": chat.id !== chatId,
               })}
             >
-              <MessageCircle className="mr-2 h-4 w-4 flex-shrink-0" />
+              <MessageCircle className="mr-2 w-4 h-4" />
               <p className="w-full overflow-hidden text-sm truncate">
-                {chat.pdfName}
+                {chat.pdfName || "New Chat"}
               </p>
+              {chat.status === 'processing' && (
+                <span className="text-xs text-yellow-500 ml-2">(Processing...)</span>
+              )}
             </div>
           </Link>
         ))}
