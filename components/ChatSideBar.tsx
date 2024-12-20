@@ -9,9 +9,10 @@ import { cn } from "@/lib/utils";
 type Props = {
   chats: DrizzleChat[];
   chatId: number;
+  onChatSelect?: () => void;
 };
 
-const ChatSideBar = ({ chats, chatId }: Props) => {
+const ChatSideBar = ({ chats, chatId, onChatSelect }: Props) => {
 
   return (
     <div className="w-full h-screen p-4 text-gray-200 bg-gray-900 flex flex-col">
@@ -24,7 +25,7 @@ const ChatSideBar = ({ chats, chatId }: Props) => {
 
       <div className="flex flex-col gap-2 mt-4 overflow-y-auto">
         {chats.map((chat) => (
-          <Link key={chat.id} href={`/chat/${chat.id}`}>
+          <Link key={chat.id} href={`/chat/${chat.id}`} onClick={onChatSelect}>
             <div
               className={cn("rounded-lg p-3 text-slate-300 flex items-center transition-colors duration-200", {
                 "bg-blue-600 text-white": chat.id === chatId,

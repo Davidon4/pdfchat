@@ -1,4 +1,5 @@
-import React from "react";
+"use client"
+import React, { useState } from "react";
 import { auth } from "@clerk/nextjs/server";
 import {redirect} from "next/navigation";
 import { db } from "@/db";
@@ -6,6 +7,8 @@ import { chats } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import ChatSideBar from "@/components/ChatSideBar";
 import ChatComponent from "@/components/ChatComponent";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type Props = {
     params: {
@@ -13,7 +16,8 @@ type Props = {
         }
 }
 
-export default async function ChatPage ({params}: Props) {
+const ChatPage = async ({params}: Props) => {
+    const [showSidebar, setShowSidebar] = useState(false);
     const {chatId} = params;
     const {userId} = await auth();
 
@@ -30,17 +34,39 @@ export default async function ChatPage ({params}: Props) {
 
     return (
       <div className="flex max-h-screen overflow-hidden">
+        {/* Mobile menu button */}
+        <Button
+          onClick={() => setShowSidebar(!showSidebar)}
+          className="fixed top-4 left-4 z-50 md:hidden p-2 bg-gray-900 text-white"
+          size="icon"
+          variant="ghost"
+        >
+          <Menu />
+        </Button>
+
         {/* Sidebar */}
         <div
-          className="w-full md:w-[300px] md:flex-shrink-0 h-full overflow-y-auto border-r border-gray-200 
-          bg-white transition-all duration-300 ease-in-out"
+          className={`fixed md:static w-[300px] h-full transition-transform duration-300 ease-in-out transform 
+          ${showSidebar ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
+          bg-white z-40 border-r border-gray-200`}
         >
-          <ChatSideBar chats={_chats} chatId={parseInt(chatId)} />
+          <ChatSideBar chats={_chats} chatId={parseInt(chatId)} onChatSelect={() => setShowSidebar(false)} />
         </div>
+
+        {/* Overlay for mobile */}
+        {showSidebar && (
+          <div 
+            className="fixed inset-0 bg-black/20 z-30 md:hidden"
+            onClick={() => setShowSidebar(false)}
+          />
+        )}
+
         {/* Main chat area */}
-        <div className="flex-1 h-screen overflow-hidden">
+        <div className="flex-1 h-screen overflow-hidden w-full">
           <ChatComponent chatId={parseInt(chatId)} />
         </div>
       </div>
     )
 }
+
+export default ChatPage;
