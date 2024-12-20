@@ -29,11 +29,18 @@ const ChatPage = ({params}: Props) => {
         }
 
         const fetchChats = async () => {
-            const _chats = await db.select().from(chats).where(eq(chats.userId, userId));
-            setChatsData(_chats);
-            
-            if (!_chats || !_chats.find((chat) => chat.id === parseInt(chatId))) {
-                redirect("/");
+            try {
+                console.log("Fetching chats for userId:", userId);
+                const _chats = await db.select().from(chats).where(eq(chats.userId, userId));
+                console.log("Fetched chats:", _chats);
+                setChatsData(_chats);
+                
+                if (!_chats || !_chats.find((chat) => chat.id === parseInt(chatId))) {
+                    console.log("No matching chat found for chatId:", chatId);
+                    redirect("/");
+                }
+            } catch (error) {
+                console.error("Error fetching chats:", error);
             }
         };
 
